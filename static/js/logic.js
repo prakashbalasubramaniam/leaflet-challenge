@@ -3,9 +3,10 @@
 const API_KEY = "pk.eyJ1IjoiajY5MjEiLCJhIjoiY2swanNoamRuMDFyZzNidXBkMXJ1bWhjbSJ9.y5QNFmDyUeHFWx-I8igKSA";
 
 // Assemble API query URL
-var url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson";
-
-  // Creating map object
+//var url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson";
+var url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson";
+  
+// Creating map object
   var myMap = L.map("map", {
     center: [40.7, -73.95],
     zoom: 2,
@@ -22,38 +23,56 @@ var url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant
 
     // Define a markerSize function that will give each city a different radius based on its population
     function markerSize(mag) {
-      return mag*40000;}
+      return mag*20000;}
+    
+    // Function to color circle 
+    function getColor(d) {
+        return d > 5 ? '#bd0026' :
+               d > 4  ? '#f03b20' :
+               d > 3  ? '#fd8d3c' :
+               d > 2  ? '#feb24c' :
+               d > 1   ? '#fed976' :
+                        '#addd8e';
+    }
 
 // Grab the data with d3
 d3.json(url, function(response) {
 
     console.log(response);
 
-
-
-    // // Define a function we want to run once for each feature in the features array
-    // // Give each feature a popup describing the place and time of the earthquake
-    // function onEachFeature(feature, layer) {
-    //   layer.bindPopup("<h3>" + feature.properties.place +
-    //     "</h3><hr><p>" + new Date(feature.properties.time) + "</p>");
-    // }
-
-    // // Create a GeoJSON layer containing the features array on the earthquakeData object
-    // // Run the onEachFeature function once for each piece of data in the array
-    // var earthquakes = L.geoJSON(response, {
-    //   onEachFeature: onEachFeature
-    // });
-    // Loop through the cities array and create one marker for each city object
   for (var i = 0; i < response.features.length; i++) {
     var earthquakelocation = [response.features[i].geometry.coordinates[1], response.features[i].geometry.coordinates[0]]
     L.circle(earthquakelocation, {
-      fillOpacity: 0.75,
-      color: "white",
-      fillColor: "purple",
+      weight: 0.2,
+      fillOpacity: 0.5,
+      color: "black",
+      fillColor: getColor(response.features[i].properties.mag),
       // Setting our circle's radius equal to the output of our markerSize function
       // This will make our marker's size proportionate to its population
       radius: markerSize(response.features[i].properties.mag)
-    }).bindPopup("<h3>" + response.features[i].properties.place + "</h3><hr><p>" + new Date(response.features[i].properties.time) + "</p>").addTo(myMap);
+    }).bindPopup("<h3>" + response.features[i].properties.place + "</h3><hr><p>" + 
+    new Date(response.features[i].properties.time) + "</h3><hr><p>" + 
+    response.features[i].properties.mag + " magnitude" + "</p>").addTo(myMap);
   }
 
-  });
+var legend = L.control({position: 'bottomright'});
+
+legend.onAdd = function (map) {
+
+    var div = L.DomUtil.create('div', 'info legend'),    
+    mag_steps = [0, 1, 2, 3, 4, 5];
+    
+
+    // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < mag_steps.length; i++) {
+        div.innerHTML +=
+            '<li style="background:' + getColor(mag_steps[i]+1) + '"></li> ' +
+            mag_steps[i] +  (mag_steps[i + 1] ? '&ndash;' + mag_steps[i + 1] + '<br>' : '+');
+    }
+
+return div;
+};
+
+legend.addTo(myMap);
+
+});
