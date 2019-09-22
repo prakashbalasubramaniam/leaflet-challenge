@@ -1,7 +1,4 @@
 
-// API key
-const API_KEY = "pk.eyJ1IjoiajY5MjEiLCJhIjoiY2swanNoamRuMDFyZzNidXBkMXJ1bWhjbSJ9.y5QNFmDyUeHFWx-I8igKSA";
-
 // API query URL
 var url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson";
   
